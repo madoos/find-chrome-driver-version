@@ -1,0 +1,38 @@
+{
+	"name": "find-chrome-driver-version",
+	"version": "0.1.0",
+	"description": "Get latest available version of chrome driver based on locally installed version",
+	"main": "index.js",
+	"scripts": {
+		"test": "jest --coverage --verbose",
+		"tdd": "npm test -- --watch",
+		"serve:coverage": "live-server coverage/lcov-report -o",
+		"demo": "node demo/index.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/madoos/find-chrome-driver-version.git"
+	},
+	"keywords": [ "chrome", "chrome", "driver" ],
+	"author": "Maurice Ronet Domínguez Osorto",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/madoos/find-chrome-driver-version/issues"
+	},
+	"homepage": "https://github.com/madoos/find-chrome-driver-version#readme",
+	"dependencies": {
+		"crocks": "^0.12.4",
+		"deasync-promise": "^1.0.1",
+		"find-chrome-version": "^2.1.0",
+		"node-fetch": "^2.6.1",
+		"ramda": "^0.27.1",
+		"xml-js": "^1.6.11",
+		"xml-to-json": "^0.1.1",
+		"xml2js": "^0.4.23",
+		"xml2js-xpath": "^0.11.0"
+	},
+	"devDependencies": {
+		"jest": "^26.4.2",
+		"live-server": "^1.2.1"
+	}
+}
