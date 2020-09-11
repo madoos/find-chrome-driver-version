@@ -1,22 +1,21 @@
-const { safe, safeAsync, asyncToIo } = require('./util');
+const { safe, safeAsync, asyncToIo, foldEither } = require('./util');
 const { head, identity } = require('ramda');
-const either = require('crocks/pointfree/either');
-const get = either(identity, identity);
 const Async = require('crocks/Async');
+const Either = require('crocks/Either');
 
 test('safe should wrap insecure function with undefined values in either context', () => {
 	const errorMessage = (xs) => `${JSON.stringify(xs)}: empty array don't have head`;
 	const safeHead = safe(errorMessage, head);
-	expect(get(safeHead([]))).toEqual(`[]: empty array don't have head`);
-	expect(get(safeHead([ 'x' ]))).toEqual('x');
+	expect(foldEither(safeHead([]))).toEqual(`[]: empty array don't have head`);
+	expect(foldEither(safeHead([ 'x' ]))).toEqual('x');
 });
 
 test('safe should wrap insecure function with try/cath errors in either context', () => {
 	const errorMessage = (x) => `Error parsing string: ${x}`;
 	const safeParse = safe(errorMessage, JSON.parse);
 
-	expect(get(safeParse(`{ "a": 1 }`))).toEqual({ a: 1 });
-	expect(get(safeParse(`x {}`))).toEqual('Error parsing string: x {}');
+	expect(foldEither(safeParse(`{ "a": 1 }`))).toEqual({ a: 1 });
+	expect(foldEither(safeParse(`x {}`))).toEqual('Error parsing string: x {}');
 });
 
 test('safeAsync should wrap insecure function with undefined values in Async context', async () => {
@@ -39,4 +38,9 @@ test.skip('asyncToIO should transform (a -> Async Error b) into (a -> IO b)', ()
 	const asyncIdentity = (x) => Async((_, resolve) => setTimeout(() => resolve(x), 0));
 	const ioIdentity = asyncToIo(asyncIdentity);
 	expect(ioIdentity(1).run()).toEqual(1);
+});
+
+test('foldEither should unwrap either values', () => {
+	expect(foldEither(Either.Right('r'))).toEqual('r');
+	expect(foldEither(Either.Left('l'))).toEqual('l');
 });

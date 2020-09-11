@@ -1,6 +1,6 @@
 {
 	"name": "find-chrome-driver-version",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Get latest available version of chrome driver based on locally installed version",
 	"main": "index.js",
 	"scripts": {

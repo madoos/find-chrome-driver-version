@@ -1,4 +1,5 @@
-const { pipe, startsWith, includes, both, last, split, head, curry } = require('ramda');
+const { pipe, startsWith, includes, both, last, split, head, curry, filter } = require('ramda');
+const { safe } = require('./util');
 
 // getMajor :: String -> String
 const getMajor = pipe(split('.'), head);
@@ -13,9 +14,17 @@ const getLastDriverVersion = pipe(last, split('/'), head);
 const getErrorMessageForGetLastDriverVersion = (lastDriverVersion) =>
 	new Error(`Error getting last driver version ${lastDriverVersion}`);
 
-// startWithChromeMajorVersion :: String -> String -> Boolean
+// start   WithChromeMajorVersion :: String -> String -> Boolean
 const startWithChromeMajorVersion = curry((major, version) =>
 	both(includes('/chromedriver'), startsWith(major))(version)
+);
+
+// getLastChromeDriveVersion :: String -> [String] -> Either Error String
+const getLastChromeDriveVersion = curry((major, versions) =>
+	pipe(
+		filter(startWithChromeMajorVersion(major)),
+		safe(getErrorMessageForGetLastDriverVersion, getLastDriverVersion)
+	)(versions)
 );
 
 module.exports = {
@@ -23,5 +32,6 @@ module.exports = {
 	getErrorMessageForGetMajor,
 	getLastDriverVersion,
 	getErrorMessageForGetLastDriverVersion,
-	startWithChromeMajorVersion
+	startWithChromeMajorVersion,
+	getLastChromeDriveVersion
 };
