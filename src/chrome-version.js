@@ -3,12 +3,16 @@ const findChromeVersion = require('find-chrome-version');
 const xpath = require('xml2js-xpath');
 const { fromPromise, fromNode } = require('crocks/Async');
 const xmlToJson = fromNode(require('xml2js').parseString);
-const { pipe, map, chain, lift, pipeK, converge } = require('ramda');
-const { safeAsync, asyncToIo } = require('./util');
+const { pipe, map, chain, lift, pipeK, converge, toString } = require('ramda');
+const { safeAsync, asIO, memoizeIoWithFile } = require('./util');
 const { getMajor, getErrorMessageForGetMajor, getLastChromeDriveVersion } = require('./domain');
 const eitherToAsync = require('crocks/Async/eitherToAsync');
+const { join } = require('path');
+const { execSync } = require('child_process');
 
 const CHROME_STORAGE_API = 'https://chromedriver.storage.googleapis.com/';
+const NODE_CALL_FOR_SPAWN = `node ${join(__dirname, './spawn.js')}`;
+const CACHE_FILE_PATH = join(__dirname, '../.cache');
 
 // getLocalChromeMajorVersion :: () -> Async Error String
 const getLocalChromeMajorVersion = pipeK(
@@ -30,11 +34,19 @@ const findChromeDriverVersion = pipeK(
 );
 
 // findChromeDriverVersionSync :: () -> IO String
-const findChromeDriverVersionSync = asyncToIo(findChromeDriverVersion);
+const findChromeDriverVersionSync = pipe(
+	asIO(() => execSync(NODE_CALL_FOR_SPAWN)), //
+	map(toString) //
+);
+
+// findChromeDriverVersionSync :: Number -> IO StrinG
+const findChromeDriverVersionSyncCached = (expiration) =>
+	memoizeIoWithFile(findChromeDriverVersionSync, CACHE_FILE_PATH, expiration)();
 
 module.exports = {
 	getLocalChromeMajorVersion,
 	getChromeDriveVersions,
 	findChromeDriverVersion,
-	findChromeDriverVersionSync
+	findChromeDriverVersionSync,
+	findChromeDriverVersionSyncCached
 };

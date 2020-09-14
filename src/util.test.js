@@ -1,7 +1,10 @@
-const { safe, safeAsync, asyncToIo, foldEither } = require('./util');
-const { head, identity } = require('ramda');
-const Async = require('crocks/Async');
+const { head, identity, always } = require('ramda');
 const Either = require('crocks/Either');
+const { join } = require('path');
+const fs = require('fs');
+const IO = require('crocks/IO');
+
+const { safe, safeAsync, foldEither, asIO, memoizeIoWithFile, Monad } = require('./util');
 
 test('safe should wrap insecure function with undefined values in either context', () => {
 	const errorMessage = (xs) => `${JSON.stringify(xs)}: empty array don't have head`;
@@ -34,13 +37,53 @@ test('safeAsync should wrap insecure function with try/cath errors in either con
 	expect(await safeParse(`x {}`).toPromise().catch(identity)).toEqual('Error parsing string: x {}');
 });
 
-test.skip('asyncToIO should transform (a -> Async Error b) into (a -> IO b)', () => {
-	const asyncIdentity = (x) => Async((_, resolve) => setTimeout(() => resolve(x), 0));
-	const ioIdentity = asyncToIo(asyncIdentity);
-	expect(ioIdentity(1).run()).toEqual(1);
-});
-
 test('foldEither should unwrap either values', () => {
 	expect(foldEither(Either.Right('r'))).toEqual('r');
 	expect(foldEither(Either.Left('l'))).toEqual('l');
+});
+
+test('asIO should transform function (*... -> a) to (*...) -> IO a', () => {
+	const ioIdentity = asIO(identity);
+	expect(ioIdentity(1).run()).toEqual(1);
+});
+
+test('Monad.do should create monadic chains', () => {
+	const io = Monad.do(function*() {
+		const x = yield IO.of(1);
+		const y = yield IO.of(2);
+		return IO.of(x + y);
+	});
+	expect(io.run()).toEqual(3);
+});
+
+test('memoizeIoWithFile should return function with cache stored in file', () => {
+	const CACHE_FILE = join(__dirname, './.testCache');
+	expect(fs.existsSync(CACHE_FILE)).toEqual(false);
+	const memoizedFn = memoizeIoWithFile(asIO(always('85.0.4183.87')), CACHE_FILE, 40000);
+	memoizedFn().run();
+	expect(fs.existsSync(CACHE_FILE)).toEqual(true);
+	fs.unlinkSync(CACHE_FILE);
+});
+
+test('memoizeIoWithFile should return function with override cache file', async () => {
+	const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+	const CACHE_FILE = join(__dirname, './.testCache');
+	const ONE_SECONDS = 1000;
+	const memoizedFn = memoizeIoWithFile(asIO(always('85.0.4183.87')), CACHE_FILE, ONE_SECONDS);
+	memoizedFn().run();
+	const birthtimeMs = fs.statSync(CACHE_FILE).birthtimeMs;
+	await delay(ONE_SECONDS);
+	memoizedFn().run();
+	const lastBirthtimeMs = fs.statSync(CACHE_FILE).birthtimeMs;
+	expect(birthtimeMs).not.toEqual(lastBirthtimeMs);
+	fs.unlinkSync(CACHE_FILE);
+});
+
+test('memoizeIoWithFile should store in cache te same IO response', async () => {
+	const CACHE_FILE = join(__dirname, './.testCache');
+	const memoizedFn = memoizeIoWithFile(asIO(always('85.0.4183.87')), CACHE_FILE, 200);
+	const result = memoizedFn().run();
+	const cacheResult = fs.readFileSync(CACHE_FILE, 'utf-8');
+	expect(result).toEqual(cacheResult);
+	fs.unlinkSync(CACHE_FILE);
 });
