@@ -1,6 +1,12 @@
 const { findChromeDriverVersion } = require('./chrome-version');
 
 findChromeDriverVersion().fork(
-	(error) => process.error.write(error.message),
-	(version) => process.stdout.write(version)
+	(error) => {
+		process.stderr.write(error.message);
+		process.exit(1);
+	},
+	(version) => {
+		process.stdout.write(version);
+		process.exit(0);
+	}
 );

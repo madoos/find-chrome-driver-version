@@ -1,6 +1,6 @@
 {
 	"name": "find-chrome-driver-version",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"description": "Get latest available version of chrome driver based on locally installed version",
 	"main": "index.js",
 	"scripts": {
@@ -13,11 +13,7 @@
 		"type": "git",
 		"url": "git+https://github.com/madoos/find-chrome-driver-version.git"
 	},
-	"keywords": [
-		"chrome",
-		"chrome",
-		"driver"
-	],
+	"keywords": [ "chrome", "driver" ],
 	"author": "Maurice Ronet Domínguez Osorto",
 	"license": "MIT",
 	"bugs": {
