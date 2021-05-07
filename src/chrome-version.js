@@ -1,4 +1,5 @@
 const fetch = require('node-fetch');
+const HttpsProxyAgent = require('https-proxy-agent');
 const findChromeVersion = require('find-chrome-version');
 const xpath = require('xml2js-xpath');
 const { fromPromise, fromNode } = require('crocks/Async');
@@ -13,6 +14,7 @@ const { execSync } = require('child_process');
 const CHROME_STORAGE_API = 'https://chromedriver.storage.googleapis.com/';
 const NODE_CALL_FOR_SPAWN = `node ${join(__dirname, './spawn.js')}`;
 const CACHE_FILE_PATH = join(__dirname, '../.cache');
+const PROXY = process.env.ALL_PROXY || process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
 
 // getLocalChromeMajorVersion :: () -> Async Error String
 const getLocalChromeMajorVersion = pipeK(
@@ -22,7 +24,9 @@ const getLocalChromeMajorVersion = pipeK(
 
 // getChromeDriveVersions :: () -> Async Error [String]
 const getChromeDriveVersions = pipe(
-	fromPromise(() => fetch(CHROME_STORAGE_API).then((res) => res.text())), // fetch XML
+	fromPromise(() => fetch(CHROME_STORAGE_API, {
+		agent: PROXY && new HttpsProxyAgent(PROXY)
+	}).then((res) => res.text())), // fetch XML
 	chain(xmlToJson),
 	map((json) => xpath.find(json, '//Key'))
 );
