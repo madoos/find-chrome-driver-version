@@ -4,7 +4,7 @@ const { join } = require('path');
 const fs = require('fs');
 const IO = require('crocks/IO');
 
-const { safe, safeAsync, foldEither, asIO, memoizeIoWithFile, Monad } = require('./util');
+const { safe, safeAsync, foldEither, asIO, memoizeIoWithFile, memoizeIoAndFallBackWithFile, Monad } = require('./util');
 
 test('safe should wrap insecure function with undefined values in either context', () => {
 	const errorMessage = (xs) => `${JSON.stringify(xs)}: empty array don't have head`;
@@ -85,5 +85,25 @@ test('memoizeIoWithFile should store in cache te same IO response', async () => 
 	const result = memoizedFn().run();
 	const cacheResult = fs.readFileSync(CACHE_FILE, 'utf-8');
 	expect(result).toEqual(cacheResult);
+	fs.unlinkSync(CACHE_FILE);
+});
+
+test('memorizeIoAndFallBackWithFile should work just like memoizeIoWithFile if no error', async () => {
+	const CACHE_FILE = join(__dirname, './.testCache');
+	fs.writeFileSync(CACHE_FILE, '85.0.4183.87');
+	const cacheResult = fs.readFileSync(CACHE_FILE, 'utf-8');
+	const memoizedFn = memoizeIoAndFallBackWithFile(() => "something diferent", CACHE_FILE, 10000);
+	const falledBackResult = memoizedFn().run();
+	expect(falledBackResult).toEqual(cacheResult);
+	fs.unlinkSync(CACHE_FILE);
+});
+
+test('memorizeIoAndFallBackWithFile should return cache if function fails', async () => {
+	const CACHE_FILE = join(__dirname, './.testCache');
+	fs.writeFileSync(CACHE_FILE, '85.0.4183.87');
+	const cacheResult = fs.readFileSync(CACHE_FILE, 'utf-8');
+	const memoizedFn = memoizeIoAndFallBackWithFile(() => {throw "error"}, CACHE_FILE, 10000);
+	const falledBackResult = memoizedFn().run();
+	expect(falledBackResult).toEqual(cacheResult);
 	fs.unlinkSync(CACHE_FILE);
 });

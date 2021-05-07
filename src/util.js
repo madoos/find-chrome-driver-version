@@ -1,5 +1,5 @@
 const { Right, Left } = require('crocks/Either');
-const { isNil, curry, curryN, pipe, identity, map, chain, always, prop } = require('ramda');
+const { isNil, curry, curryN, pipe, identity, map, chain, prop, tryCatch } = require('ramda');
 const eitherToAsync = require('crocks/Async/eitherToAsync');
 const IO = require('crocks/IO');
 const either = require('crocks/pointfree/either');
@@ -84,11 +84,20 @@ const memoizeIoWithFile = curry((f, cacheFile, expiration) => {
 	};
 });
 
+// memorizeIoAndFallBackWithFile :: (a -> IO String) -> String -> (a -> IO String)
+const memoizeIoAndFallBackWithFile = curry((f, cacheFile, expiration) => {
+	return asIO(tryCatch(
+		() => fsIO.readFileSync(cacheFile, 'utf-8').run(),
+		() => memoizeIoWithFile(f, cacheFile, expiration)
+	));
+});
+
 module.exports = {
 	safe,
 	safeAsync,
 	foldEither,
 	asIO,
 	memoizeIoWithFile,
+	memoizeIoAndFallBackWithFile,
 	Monad
 };
