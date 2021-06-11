@@ -5,7 +5,7 @@ const xpath = require('xml2js-xpath');
 const { fromPromise, fromNode } = require('crocks/Async');
 const xmlToJson = fromNode(require('xml2js').parseString);
 const { pipe, map, chain, lift, pipeK, converge, toString } = require('ramda');
-const { safeAsync, asIO, memoizeIoWithFile, memorizeIoAndFallBackWithFile } = require('./util');
+const { safeAsync, asIO, memoizeIoWithFile, memoizeIoAndFallBackWithFile } = require('./util');
 const { getMajor, getErrorMessageForGetMajor, getLastChromeDriveVersion } = require('./domain');
 const eitherToAsync = require('crocks/Async/eitherToAsync');
 const { join } = require('path');
@@ -49,7 +49,7 @@ const findChromeDriverVersionSyncCached = (expiration) =>
 
 	// findChromeDriverVersionSync :: Number -> IO StrinG
 const findChromeDriverVersionSyncCachedFallback = (expiration) =>
-	memorizeIoAndFallBackWithFile(findChromeDriverVersionSync, CACHE_FILE_PATH, expiration)();
+	memoizeIoAndFallBackWithFile(findChromeDriverVersionSync, CACHE_FILE_PATH, expiration)();
 
 module.exports = {
 	getLocalChromeMajorVersion,

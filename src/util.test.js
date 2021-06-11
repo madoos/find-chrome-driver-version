@@ -88,7 +88,7 @@ test('memoizeIoWithFile should store in cache te same IO response', async () => 
 	fs.unlinkSync(CACHE_FILE);
 });
 
-test('memorizeIoAndFallBackWithFile should work just like memoizeIoWithFile if no error', async () => {
+test('memoizeIoAndFallBackWithFile should work just like memoizeIoWithFile if no error', async () => {
 	const CACHE_FILE = join(__dirname, './.testCache');
 	fs.writeFileSync(CACHE_FILE, '85.0.4183.87');
 	const cacheResult = fs.readFileSync(CACHE_FILE, 'utf-8');
@@ -98,7 +98,7 @@ test('memorizeIoAndFallBackWithFile should work just like memoizeIoWithFile if n
 	fs.unlinkSync(CACHE_FILE);
 });
 
-test('memorizeIoAndFallBackWithFile should return cache if function fails', async () => {
+test('memoizeIoAndFallBackWithFile should return cache if function fails', async () => {
 	const CACHE_FILE = join(__dirname, './.testCache');
 	fs.writeFileSync(CACHE_FILE, '85.0.4183.87');
 	const cacheResult = fs.readFileSync(CACHE_FILE, 'utf-8');
