@@ -98,6 +98,18 @@ test('memoizeIoAndFallBackWithFile should work just like memoizeIoWithFile if no
 	fs.unlinkSync(CACHE_FILE);
 });
 
+test('memoizeIoAndFallBackWithFile should work just like memoizeIoWithFile if no error and no cache', async () => {
+	const CACHE_FILE = join(__dirname, './.testCache');
+	if (fs.existsSync(CACHE_FILE)) {
+		fs.rmSync(CACHE_FILE);
+	}
+	const result = '85.0.4183.88';
+	const memoizedFn = memoizeIoAndFallBackWithFile(asIO(always(result)), CACHE_FILE, 10000);
+	const falledBackResult = memoizedFn().run();
+	expect(falledBackResult).toEqual(result);
+	fs.unlinkSync(CACHE_FILE);
+});
+
 test('memoizeIoAndFallBackWithFile should return cache if function fails', async () => {
 	const CACHE_FILE = join(__dirname, './.testCache');
 	fs.writeFileSync(CACHE_FILE, '85.0.4183.87');

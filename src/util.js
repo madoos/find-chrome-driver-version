@@ -88,7 +88,7 @@ const memoizeIoWithFile = curry((f, cacheFile, expiration) => {
 const memoizeIoAndFallBackWithFile = curry((f, cacheFile, expiration) => {
 	return asIO(tryCatch(
 		() => fsIO.readFileSync(cacheFile, 'utf-8').run(),
-		() => memoizeIoWithFile(f, cacheFile, expiration)
+		() => memoizeIoWithFile(f, cacheFile, expiration)().run()
 	));
 });
 
