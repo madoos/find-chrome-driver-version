@@ -12,7 +12,7 @@ const { join } = require('path');
 const { execSync } = require('child_process');
 
 const CHROME_STORAGE_API = 'https://chromedriver.storage.googleapis.com/';
-const NODE_CALL_FOR_SPAWN = `node ${join(__dirname, './spawn.js')}`;
+const NODE_CALL_FOR_SPAWN = `node "${join(__dirname, './spawn.js')}"`;
 const CACHE_FILE_PATH = join(__dirname, '../.cache');
 const PROXY = process.env.ALL_PROXY || process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
 
